@@ -130,7 +130,7 @@ class Mefamo():
 
         if os.name == 'nt':
             # will improve webcam input startup on windows 
-            cap = cv2.VideoCapture(input, cv2.CAP_DSHOW)   
+            cap = cv2.VideoCapture(input)
         else:
             cap = cv2.VideoCapture(input)                
 
