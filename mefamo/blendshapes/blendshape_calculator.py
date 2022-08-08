@@ -4,6 +4,13 @@ from pylivelinkface import PyLiveLinkFace, FaceBlendShape
 from google.protobuf.internal.containers import RepeatedCompositeFieldContainer
 from .blendshape_config import BlendShapeConfig
 
+try:
+    print("try to import math.dist (python>=3.8)")
+    import math.dist
+except:
+    from scipy.spatial import distance
+    math.dist = distance.euclidean
+
 class BlendshapeCalculator():
     """ BlendshapeCalculator class
     

@@ -41,6 +41,8 @@ If you just want to use it and don't have an active python environment or want t
 To use MeFaMo in python, just execute the mefamo_cli.py file in the examples folder:
 ```
 python mefamo_cli.py
+python mefamo_cli.py --ip 192.168.4.21
+
 ```
 
 mefamo_cli gives you several options for image input, the default behavior is to open the Webcam (camera 0). But you can also
