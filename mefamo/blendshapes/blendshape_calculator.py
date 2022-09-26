@@ -4,20 +4,108 @@ from pylivelinkface import PyLiveLinkFace, FaceBlendShape
 from google.protobuf.internal.containers import RepeatedCompositeFieldContainer
 from .blendshape_config import BlendShapeConfig
 
+try:
+    print("try to import math.dist (python>=3.8)")
+    import math.dist
+except:
+    from scipy.spatial import distance
+    math.dist = distance.euclidean
+
+blendshape_name = [
+        'EyeBlinkLeft',
+        'EyeLookDownLeft',
+        'EyeLookInLeft',
+        'EyeLookOutLeft',
+        'EyeLookUpLeft',
+        'EyeSquintLeft',
+        'EyeWideLeft',
+        'EyeBlinkRight',
+        'EyeLookDownRight',
+        'EyeLookInRight',
+        'EyeLookOutRight',
+        'EyeLookUpRight',
+        'EyeSquintRight',
+        'EyeWideRight',
+        'JawForward',
+        'JawLeft',
+        'JawRight',
+        'JawOpen',
+        'MouthClose',
+        'MouthFunnel',
+        'MouthPucker',
+        'MouthLeft',
+        'MouthRight',
+        'MouthSmileLeft',
+        'MouthSmileRight',
+        'MouthFrownLeft',
+        'MouthFrownRight',
+        'MouthDimpleLeft',
+        'MouthDimpleRight',
+        'MouthStretchLeft',
+        'MouthStretchRight',
+        'MouthRollLower',
+        'MouthRollUpper',
+        'MouthShrugLower',
+        'MouthShrugUpper',
+        'MouthPressLeft',
+        'MouthPressRight',
+        'MouthLowerDownLeft',
+        'MouthLowerDownRight',
+        'MouthUpperUpLeft',
+        'MouthUpperUpRight',
+        'BrowDownLeft',
+        'BrowDownRight',
+        'BrowInnerUp',
+        'BrowOuterUpLeft',
+        'BrowOuterUpRight',
+        'CheekPuff',
+        'CheekSquintLeft',
+        'CheekSquintRight',
+        'NoseSneerLeft',
+        'NoseSneerRight',
+        'TongueOut',
+        'HeadYaw',
+        'HeadPitch',
+        'HeadRoll',
+        'LeftEyeYaw',
+        'LeftEyePitch',
+        'LeftEyeRoll',
+        'RightEyeYaw',
+        'RightEyePitch',
+        'RightEyeRoll']
+class PyLiveLinkFaceMock:
+
+    def __init__(self) -> None:
+        self._blend_shapes = [0.000] * 61
+        self.bs = {}
+        return
+
+    def set_blendshape(self, index: FaceBlendShape, value: float,
+                        no_filter: bool = False) -> None:
+        self._blend_shapes[index.value] = value
+        self.bs[blendshape_name[index.value]] = value
+
+    def get_blendshape(self, index: FaceBlendShape) -> float:
+        return self._blend_shapes[index.value]
+
+    def get_all_bs(self):
+        return self.bs
+
+
 class BlendshapeCalculator():
     """ BlendshapeCalculator class
-    
+
     This class calculates the blendshapes from the given landmarks.
     """
 
     def __init__(self) -> None:
-        self.blend_shape_config = BlendShapeConfig()        
-        
-    def calculate_blendshapes(self, live_link_face: PyLiveLinkFace, metric_landmarks: np.ndarray, normalized_landmarks: RepeatedCompositeFieldContainer) -> None:
-        """ Calculate the blendshapes from the given landmarks. 
-        
+        self.blend_shape_config = BlendShapeConfig()
+
+    def calculate_blendshapes(self, bs, metric_landmarks: np.ndarray, normalized_landmarks: RepeatedCompositeFieldContainer) -> None:
+        """ Calculate the blendshapes from the given landmarks.
+
         This function calculates the blendshapes from the given landmarks and stores them in the given live_link_face.
-        
+
         Parameters
         ----------
         live_link_face : PyLiveLinkFace
@@ -26,22 +114,24 @@ class BlendshapeCalculator():
             The metric landmarks of the face in 3d.
         normalized_landmarks: RepeatedCompositeFieldContainer
             Output from the mediapipe process function for each face.
-        
+
         Returns
         ----------
         None
         """
 
-        self._live_link_face = live_link_face
+        self.bs = bs
+        self._live_link_face = PyLiveLinkFaceMock()
         self._metric_landmarks = metric_landmarks
         self._normalized_landmarks = normalized_landmarks
 
         self._calculate_mouth_landmarks()
         self._calculate_eye_landmarks()
-        
-    def _get_landmark(self, index: int, use_normalized: bool = False) -> np.array:   
+        self.bs.update(self._live_link_face.get_all_bs())
+
+    def _get_landmark(self, index: int, use_normalized: bool = False) -> np.array:
         """ Get the stored landmark from the given index.
-        
+
         This function converts both the metric and normalized landmarks to a numpy array.
 
         Parameters
@@ -50,11 +140,11 @@ class BlendshapeCalculator():
             Index of the point to get the landmark from.
         use_normalized: bool
             If true, the normalized landmarks are used. Otherwise the metric landmarks are used.
-        
+
         Returns
         ----------
         np.array
-            The landmark in a 3d numpy array.   
+            The landmark in a 3d numpy array.
         """
 
         landmarks = self._metric_landmarks
@@ -64,23 +154,23 @@ class BlendshapeCalculator():
         if type(landmarks) == np.ndarray:
             # is a 3d landmark
             x = landmarks[index][0]
-            y = landmarks[index][1]             
-            z = landmarks[index][2] 
+            y = landmarks[index][1]
+            z = landmarks[index][2]
             return np.array([x, y, z])
-        else:           
+        else:
             # is a normalized landmark
             x = landmarks[index].x #* self.image_width
             y = landmarks[index].y #* self.image_height
             z = landmarks[index].z #* self.image_height
-            return np.array([x, y, z])      
+            return np.array([x, y, z])
 
     #  clamp value to 0 - 1 using the min and max values of the config
     def _remap(self, value, min, max):
         return (np.clip(value, min, max) - min) / (max - min)
 
     def _remap_blendshape(self, index: FaceBlendShape, value: float):
-        min, max = self.blend_shape_config.config.get(index)        
-        return self._remap(value, min, max)  
+        min, max = self.blend_shape_config.config.get(index)
+        return self._remap(value, min, max)
 
     def _calculate_mouth_landmarks(self):
         upper_lip = self._get_landmark(self.blend_shape_config.CanonicalPpoints.upper_lip)
@@ -228,21 +318,21 @@ class BlendshapeCalculator():
             self._live_link_face.set_blendshape(FaceBlendShape.MouthFunnel, 0)
 
         left_upper_press = math.dist(
-            self._get_landmark(self.blend_shape_config.CanonicalPpoints.left_upper_press[0]), 
+            self._get_landmark(self.blend_shape_config.CanonicalPpoints.left_upper_press[0]),
             self._get_landmark(self.blend_shape_config.CanonicalPpoints.left_upper_press[1])
         )
         left_lower_press = math.dist(
-            self._get_landmark(self.blend_shape_config.CanonicalPpoints.left_lower_press[0]), 
+            self._get_landmark(self.blend_shape_config.CanonicalPpoints.left_lower_press[0]),
             self._get_landmark(self.blend_shape_config.CanonicalPpoints.left_lower_press[1])
         )
         mouth_press_left = (left_upper_press + left_lower_press) / 2
 
         right_upper_press = math.dist(
-            self._get_landmark(self.blend_shape_config.CanonicalPpoints.right_upper_press[0]), 
+            self._get_landmark(self.blend_shape_config.CanonicalPpoints.right_upper_press[0]),
             self._get_landmark(self.blend_shape_config.CanonicalPpoints.right_upper_press[1])
         )
         right_lower_press = math.dist(
-            self._get_landmark(self.blend_shape_config.CanonicalPpoints.right_lower_press[0]), 
+            self._get_landmark(self.blend_shape_config.CanonicalPpoints.right_lower_press[0]),
             self._get_landmark(self.blend_shape_config.CanonicalPpoints.right_lower_press[1])
         )
         mouth_press_right = (right_upper_press + right_lower_press) / 2
@@ -281,7 +371,7 @@ class BlendshapeCalculator():
 
         eye_open_ratio_left = get_eye_open_ration(self.blend_shape_config.CanonicalPpoints.eye_left)
         eye_open_ratio_right = get_eye_open_ration(self.blend_shape_config.CanonicalPpoints.eye_right)
-    
+
         blink_left = 1 - \
             self._remap_blendshape(
                 FaceBlendShape.EyeBlinkLeft, eye_open_ratio_left)
@@ -300,14 +390,14 @@ class BlendshapeCalculator():
             FaceBlendShape.EyeWideRight, eye_open_ratio_right))
 
         squint_left = math.dist(
-            self._get_landmark(self.blend_shape_config.CanonicalPpoints.squint_left[0]), 
+            self._get_landmark(self.blend_shape_config.CanonicalPpoints.squint_left[0]),
             self._get_landmark(self.blend_shape_config.CanonicalPpoints.squint_left[1])
         )
         self._live_link_face.set_blendshape(
             FaceBlendShape.EyeSquintLeft, 1 - self._remap_blendshape(FaceBlendShape.EyeSquintLeft, squint_left))
-  
+
         squint_right = math.dist(
-            self._get_landmark(self.blend_shape_config.CanonicalPpoints.squint_right[0]), 
+            self._get_landmark(self.blend_shape_config.CanonicalPpoints.squint_right[0]),
             self._get_landmark(self.blend_shape_config.CanonicalPpoints.squint_right[1])
         )
         self._live_link_face.set_blendshape(
@@ -345,12 +435,12 @@ class BlendshapeCalculator():
             FaceBlendShape.BrowInnerUp, inner_brow_dist))
 
         cheek_squint_left = math.dist(
-            self._get_landmark(self.blend_shape_config.CanonicalPpoints.cheek_squint_left[0]), 
+            self._get_landmark(self.blend_shape_config.CanonicalPpoints.cheek_squint_left[0]),
             self._get_landmark(self.blend_shape_config.CanonicalPpoints.cheek_squint_left[1])
         )
 
         cheek_squint_right = math.dist(
-            self._get_landmark(self.blend_shape_config.CanonicalPpoints.cheek_squint_right[0]), 
+            self._get_landmark(self.blend_shape_config.CanonicalPpoints.cheek_squint_right[0]),
             self._get_landmark(self.blend_shape_config.CanonicalPpoints.cheek_squint_right[1])
         )
 
