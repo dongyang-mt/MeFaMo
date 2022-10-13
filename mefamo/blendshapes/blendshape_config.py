@@ -5,7 +5,7 @@ from pylivelinkface.pylivelinkface import FaceBlendShape
 class BlendShapeConfig:
         class CanonicalPpoints:
 
-            # canoncial points mapped from the canoncial face model        
+            # canoncial points mapped from the canoncial face model
             # for better understanding of the points, see the canonical face model from mediapipe
             # https://github.com/google/mediapipe/blob/master/mediapipe/modules/face_geometry/data/canonical_face_model_uv_visualization.png
 
@@ -32,7 +32,7 @@ class BlendShapeConfig:
             right_upper_press = [270, 310]
             right_lower_press = [318, 321]
             squint_left = [253, 450]
-            squint_right = [23, 230]            
+            squint_right = [23, 230]
             right_brow = 27
             right_brow_lower = [53, 52, 65]
             left_brow = 257
@@ -61,14 +61,14 @@ class BlendShapeConfig:
             # FaceBlendShape.JawForward : (-0.4, 0.0),
             FaceBlendShape.JawLeft : (-0.4, 0.0),
             FaceBlendShape.JawRight : (0.0, 0.4),
-            FaceBlendShape.JawOpen : (0.50, 0.55),
+            FaceBlendShape.JawOpen : (0.5, 0.6),
             FaceBlendShape.MouthClose : (3.0, 4.5),
             FaceBlendShape.MouthFunnel : (4.0, 4.8),
             FaceBlendShape.MouthPucker : (3.46, 4.92),
             FaceBlendShape.MouthLeft : (-3.4, -2.3),
             FaceBlendShape.MouthRight : ( 1.5, 3.0),
-            FaceBlendShape.MouthSmileLeft : (-0.25, 0.0),
-            FaceBlendShape.MouthSmileRight : (-0.25, 0.0),
+            FaceBlendShape.MouthSmileLeft : (-0.25, 0.5),
+            FaceBlendShape.MouthSmileRight : (-0.25, 0.5),
             FaceBlendShape.MouthFrownLeft : (0.4, 0.9),
             FaceBlendShape.MouthFrownRight : (0.4, 0.9),
             # FaceBlendShape.MouthDimpleLeft : (-0.4, 0.0),
@@ -104,7 +104,7 @@ class BlendShapeConfig:
             # FaceBlendShape.LeftEyeRoll : (-0.4, 0.0),
             # FaceBlendShape.RightEyeYaw : (-0.4, 0.0),
             # FaceBlendShape.RightEyePitch : (-0.4, 0.0),
-            # FaceBlendShape.RightEyeRoll : (-0.4, 0.0), 
+            # FaceBlendShape.RightEyeRoll : (-0.4, 0.0),
         }
 
-       
+

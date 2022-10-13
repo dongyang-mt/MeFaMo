@@ -11,11 +11,11 @@ if __name__ == "__main__":
                         help='IP address of the Unreal LiveLink server.')
     parser.add_argument('--port', default=11111,
                         help='Port of the Unreal LiveLink server.')
-    parser.add_argument('--show_3d', action='store_true',
+    parser.add_argument('--show_3d', action='store_true', default=True,
                         help='Show the 3d face image (projected into a 2d window')
     parser.add_argument('--hide_image', action='store_true',
                         help='Hide the image window.')
-    parser.add_argument('--show_debug', action='store_true',
+    parser.add_argument('--show_debug', action='store_true', default=True,
                         help='Show debug window.')
     args = parser.parse_args()
 
